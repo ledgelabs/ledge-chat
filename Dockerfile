@@ -1,0 +1,66 @@
+# Stage 1: Build the application
+FROM node:22.16.0-alpine3.20 AS builder
+
+# Install build dependencies
+RUN apk add --no-cache python3 make g++ py3-setuptools libc6-compat git
+
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn .yarn
+COPY apps/meteor/package.json apps/meteor/
+COPY packages packages/
+COPY ee ee/
+
+# Enable corepack and install dependencies
+RUN corepack enable && yarn install --immutable
+
+# Copy the rest of the application
+COPY . .
+
+# Build the application
+ENV NODE_ENV=production
+RUN yarn build
+
+# Stage 2: Production image
+FROM node:22.16.0-alpine3.20
+
+ENV LANG=C.UTF-8
+
+# Install runtime dependencies
+RUN apk add --no-cache shadow deno ttf-dejavu \
+    && apk upgrade --no-cache openssl \
+    && groupmod -n rocketchat nogroup \
+    && useradd -u 65533 -r -g rocketchat rocketchat
+
+# Set environment variables
+ENV DEPLOY_METHOD=docker \
+    NODE_ENV=production \
+    MONGO_URL=mongodb://mongo:27017/rocketchat \
+    HOME=/tmp \
+    PORT=3000 \
+    ROOT_URL=http://localhost:3000 \
+    Accounts_AvatarStorePath=/app/uploads
+
+WORKDIR /app
+
+# Copy built application from builder
+COPY --from=builder --chown=rocketchat:rocketchat /app/apps/meteor/.build/bundle /app/bundle
+
+# Install production dependencies
+RUN cd /app/bundle/programs/server \
+    && npm install --omit=dev \
+    && cd /app/bundle/programs/server/npm/node_modules/sharp \
+    && npm install --omit=dev \
+    && rm -rf ../@img \
+    && mv node_modules/@img ../@img \
+    && rm -rf node_modules
+
+USER rocketchat
+
+VOLUME /app/uploads
+
+EXPOSE 3000
+
+CMD ["node", "bundle/main.js"]
