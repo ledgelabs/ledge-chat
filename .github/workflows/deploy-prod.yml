@@ -1,0 +1,14 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call:
+    name: Build and Push
+    uses: ledgelabs/ledge-chat/.github/workflows/deploy.yml@main
+    with:
+      env: prod
+    secrets:
+      aws_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

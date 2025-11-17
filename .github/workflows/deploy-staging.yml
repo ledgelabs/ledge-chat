@@ -1,0 +1,16 @@
+name: Deploy [main] to Staging
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  call:
+    name: Build and Push
+    uses: ledgelabs/ledge-chat/.github/workflows/deploy.yml@main
+    with:
+      env: staging
+    secrets:
+      aws_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      aws_secret: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
