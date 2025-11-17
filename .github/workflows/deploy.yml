@@ -19,8 +19,9 @@ jobs:
         service:
           - name: chat
             dockerfile: apps/meteor/.docker/Dockerfile.alpine
-          - name: ddp-streamer
-            dockerfile: ee/apps/ddp-streamer/Dockerfile
+          # TODO: Add ddp-streamer for horizontal scaling when needed
+          # - name: ddp-streamer
+          #   dockerfile: ee/apps/ddp-streamer/Dockerfile
 
     env:
       ECR_REPOSITORY: "${{ inputs.env }}-${{ matrix.service.name }}"
