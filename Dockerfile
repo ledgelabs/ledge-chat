@@ -6,18 +6,11 @@ RUN apk add --no-cache python3 make g++ py3-setuptools libc6-compat git
 
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn .yarn
-COPY apps/meteor/package.json apps/meteor/
-COPY packages packages/
-COPY ee ee/
+# Copy everything (yarn workspaces needs all package.json files)
+COPY . .
 
 # Enable corepack and install dependencies
 RUN corepack enable && yarn install --immutable
-
-# Copy the rest of the application
-COPY . .
 
 # Build the application
 ENV NODE_ENV=production
