@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         service:
-          - name: rocketchat
+          - name: chat
             dockerfile: apps/meteor/.docker/Dockerfile.alpine
           - name: ddp-streamer
             dockerfile: ee/apps/ddp-streamer/Dockerfile
@@ -27,7 +27,7 @@ jobs:
     env:
       ECR_REPOSITORY: "${{ inputs.env }}-${{ matrix.service.name }}"
       ECS_SERVICE: "${{ inputs.env }}-${{ matrix.service.name }}"
-      ECS_CLUSTER: "${{ inputs.env }}-rocketchat"
+      ECS_CLUSTER: "${{ inputs.env }}-chat"
       CONTAINER_NAME: "${{ inputs.env }}-${{ matrix.service.name }}"
 
     steps:
