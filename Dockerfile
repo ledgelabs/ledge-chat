@@ -1,8 +1,19 @@
-# Stage 1: Build the application
-FROM node:22.16.0-alpine3.20 AS builder
+# Stage 1: Build the application (use Debian for Meteor compatibility)
+FROM node:22.16.0-bookworm AS builder
 
-# Install build dependencies including Deno and curl/bash for Meteor install
-RUN apk add --no-cache python3 make g++ py3-setuptools libc6-compat git deno curl bash
+# Install build dependencies including Deno
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    git \
+    curl \
+    && curl -fsSL https://deno.land/install.sh | sh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add Deno to PATH
+ENV DENO_INSTALL="/root/.deno"
+ENV PATH="$DENO_INSTALL/bin:$PATH"
 
 WORKDIR /app
 
