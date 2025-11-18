@@ -23,6 +23,9 @@ RUN curl https://install.meteor.com/ | sh
 # Copy everything (yarn workspaces needs all package.json files)
 COPY . .
 
+# Fix .meteor/local permissions and ensure clean build
+RUN mkdir -p apps/meteor/.meteor/local && chown -R root:root apps/meteor/.meteor/local
+
 # Enable corepack and install dependencies
 RUN corepack enable && yarn install --immutable
 
