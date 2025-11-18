@@ -37,6 +37,8 @@ RUN corepack enable && yarn install
 RUN yarn build
 
 # Build the Meteor production bundle using yarn build:ci (outputs to /tmp/dist)
+# METEOR_ALLOW_SUPERUSER is required because we're building as root in Docker
+ENV METEOR_ALLOW_SUPERUSER=1
 RUN yarn workspace @rocket.chat/meteor run build:ci
 
 # Stage 2: Production image
