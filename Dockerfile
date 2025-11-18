@@ -16,6 +16,10 @@ RUN corepack enable && yarn install --immutable
 ENV NODE_ENV=production
 RUN yarn build
 
+# Build the Meteor production bundle
+RUN cd apps/meteor && \
+    METEOR_DISABLE_OPTIMISTIC_CACHING=1 meteor build --server-only --directory /tmp/build
+
 # Stage 2: Production image
 FROM node:22.16.0-alpine3.20
 
@@ -39,7 +43,7 @@ ENV DEPLOY_METHOD=docker \
 WORKDIR /app
 
 # Copy built application from builder
-COPY --from=builder --chown=rocketchat:rocketchat /app/apps/meteor/.build/bundle /app/bundle
+COPY --from=builder --chown=rocketchat:rocketchat /tmp/build/bundle /app/bundle
 
 # Install production dependencies
 RUN cd /app/bundle/programs/server \
