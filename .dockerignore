@@ -9,9 +9,6 @@ apps/meteor/.meteor/local
 **/build
 *.log
 
-# IMPORTANT: Don't ignore docker-build - it contains the pre-built bundle
-!docker-build
-
 # Git
 .git
 .gitignore

@@ -4,13 +4,17 @@ FROM node:22.16.0-alpine3.20
 
 ENV LANG=C.UTF-8
 
-# Install runtime dependencies
+# Install runtime and build dependencies
 RUN apk add --no-cache \
     ca-certificates \
     fontconfig \
     shadow \
     deno \
     ttf-dejavu \
+    # Build tools needed for npm install (native modules)
+    python3 \
+    make \
+    g++ \
     && apk upgrade --no-cache openssl \
     && groupmod -n rocketchat nogroup \
     && useradd -u 65533 -r -g rocketchat rocketchat
@@ -27,16 +31,20 @@ ENV DEPLOY_METHOD=docker \
 WORKDIR /app
 
 # Copy the pre-built bundle from GitHub Actions build (copied to docker-build/ by workflow)
-COPY --chown=rocketchat:rocketchat docker-build/bundle /app/bundle
+COPY docker-build/bundle /app/bundle
 
-# Install production npm dependencies
+# Install production npm dependencies (as root, then chown)
 RUN cd /app/bundle/programs/server \
     && npm install --omit=dev \
     && cd /app/bundle/programs/server/npm/node_modules/sharp \
     && npm install --omit=dev \
     && rm -rf ../@img \
     && mv node_modules/@img ../@img \
-    && rm -rf node_modules
+    && rm -rf node_modules \
+    # Remove build tools to reduce image size
+    && apk del python3 make g++ \
+    # Set ownership after build
+    && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
 
