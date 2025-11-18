@@ -26,8 +26,8 @@ ENV DEPLOY_METHOD=docker \
 
 WORKDIR /app
 
-# Copy the pre-built bundle from GitHub Actions build
-COPY --chown=rocketchat:rocketchat /tmp/dist/bundle /app/bundle
+# Copy the pre-built bundle from GitHub Actions build (copied to docker-build/ by workflow)
+COPY --chown=rocketchat:rocketchat docker-build/bundle /app/bundle
 
 # Install production npm dependencies
 RUN cd /app/bundle/programs/server \

@@ -59,6 +59,11 @@ jobs:
           METEOR_ALLOW_SUPERUSER: 1
         run: yarn workspace @rocket.chat/meteor run build:ci
 
+      - name: Copy bundle to build context
+        run: |
+          mkdir -p ./docker-build
+          cp -r /tmp/dist/bundle ./docker-build/bundle
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
