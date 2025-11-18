@@ -1,10 +1,13 @@
 # Stage 1: Build the application
 FROM node:22.16.0-alpine3.20 AS builder
 
-# Install build dependencies including Deno
-RUN apk add --no-cache python3 make g++ py3-setuptools libc6-compat git deno
+# Install build dependencies including Deno and curl/bash for Meteor install
+RUN apk add --no-cache python3 make g++ py3-setuptools libc6-compat git deno curl bash
 
 WORKDIR /app
+
+# Install Meteor
+RUN curl https://install.meteor.com/ | sh
 
 # Copy everything (yarn workspaces needs all package.json files)
 COPY . .
@@ -12,13 +15,11 @@ COPY . .
 # Enable corepack and install dependencies
 RUN corepack enable && yarn install --immutable
 
-# Build the application
-ENV NODE_ENV=production
+# Build all packages first
 RUN yarn build
 
-# Build the Meteor production bundle
-RUN cd apps/meteor && \
-    METEOR_DISABLE_OPTIMISTIC_CACHING=1 meteor build --server-only --directory /tmp/build
+# Build the Meteor production bundle using yarn build:ci (outputs to /tmp/dist)
+RUN yarn workspace @rocket.chat/meteor run build:ci
 
 # Stage 2: Production image
 FROM node:22.16.0-alpine3.20
@@ -42,8 +43,8 @@ ENV DEPLOY_METHOD=docker \
 
 WORKDIR /app
 
-# Copy built application from builder
-COPY --from=builder --chown=rocketchat:rocketchat /tmp/build/bundle /app/bundle
+# Copy built application from builder (build:ci outputs to /tmp/dist)
+COPY --from=builder --chown=rocketchat:rocketchat /tmp/dist/bundle /app/bundle
 
 # Install production dependencies
 RUN cd /app/bundle/programs/server \
