@@ -1,8 +1,8 @@
 # Stage 1: Build the application
 FROM node:22.16.0-alpine3.20 AS builder
 
-# Install build dependencies
-RUN apk add --no-cache python3 make g++ py3-setuptools libc6-compat git
+# Install build dependencies including Deno
+RUN apk add --no-cache python3 make g++ py3-setuptools libc6-compat git deno
 
 WORKDIR /app
 
