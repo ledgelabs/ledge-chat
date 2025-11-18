@@ -3,11 +3,13 @@ FROM node:22.16.0-bookworm AS builder
 
 # Install build dependencies including Deno
 RUN apt-get update && apt-get install -y \
+    ca-certificates \
     python3 \
     make \
     g++ \
     git \
     curl \
+    fontconfig \
     && curl -fsSL https://deno.land/install.sh | sh \
     && rm -rf /var/lib/apt/lists/*
 
@@ -23,11 +25,13 @@ RUN curl https://install.meteor.com/ | sh
 # Copy everything (yarn workspaces needs all package.json files)
 COPY . .
 
-# Fix .meteor/local permissions and ensure clean build
-RUN mkdir -p apps/meteor/.meteor/local && chown -R root:root apps/meteor/.meteor/local
+# Remove any existing .meteor/local and create fresh with proper permissions
+RUN rm -rf apps/meteor/.meteor/local && \
+    mkdir -p apps/meteor/.meteor/local && \
+    chmod -R 755 apps/meteor/.meteor/local
 
-# Enable corepack and install dependencies
-RUN corepack enable && yarn install --immutable
+# Enable corepack and install dependencies (remove --immutable for native module rebuilds)
+RUN corepack enable && yarn install
 
 # Build all packages first
 RUN yarn build
