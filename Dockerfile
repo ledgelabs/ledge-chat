@@ -1,10 +1,10 @@
 # Rocket.Chat Docker image for pre-built bundle
-# Using node:20-bullseye-slim for better Meteor compatibility
-FROM node:20-bullseye-slim
+# Using Node 22 for Yarn v4 compatibility
+FROM node:22-bookworm-slim
 
 ENV LANG=C.UTF-8
 
-# Install build and runtime dependencies
+# Install runtime dependencies (build tools for native modules)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -41,9 +41,9 @@ WORKDIR /app
 # Copy the pre-built bundle from GitHub Actions build (copied to docker-build/ by workflow)
 COPY docker-build/bundle /app/bundle
 
-# Install production npm dependencies and rebuild native modules
+# Install production npm dependencies (skip scripts since bundle is pre-built)
 RUN cd /app/bundle/programs/server \
-    && npm install --omit=dev --unsafe-perm \
+    && npm install --omit=dev --ignore-scripts \
     && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
