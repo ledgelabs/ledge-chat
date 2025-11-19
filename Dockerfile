@@ -1,18 +1,23 @@
 # Rocket.Chat Docker image for pre-built bundle
-# This Dockerfile expects the bundle to be pre-built by GitHub Actions
-# Using Debian like the official release for better compatibility
-FROM node:22.16.0-bookworm-slim
+# Using node:20-bullseye-slim for better Meteor compatibility
+FROM node:20-bullseye-slim
 
 ENV LANG=C.UTF-8
 
-# Install runtime dependencies
+# Install build and runtime dependencies
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         fontconfig \
         curl \
         unzip \
+        python3 \
+        make \
+        g++ \
+        libssl-dev \
+        graphicsmagick \
     && curl -fsSL https://deno.land/install.sh | sh \
+    && corepack enable \
     && groupadd -r rocketchat \
     && useradd -r -g rocketchat -u 65533 rocketchat \
     && apt-get clean \
@@ -36,10 +41,9 @@ WORKDIR /app
 # Copy the pre-built bundle from GitHub Actions build (copied to docker-build/ by workflow)
 COPY docker-build/bundle /app/bundle
 
-# Install production npm dependencies
-# Skip install scripts since bundle is pre-built
+# Install production npm dependencies and rebuild native modules
 RUN cd /app/bundle/programs/server \
-    && npm install --omit=dev --ignore-scripts \
+    && npm install --omit=dev --unsafe-perm \
     && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
