@@ -1,23 +1,25 @@
 # Rocket.Chat Docker image for pre-built bundle
-# This Dockerfile expects the bundle to be pre-built by GitHub Actions at /tmp/dist/bundle
-FROM node:22.16.0-alpine3.20
+# This Dockerfile expects the bundle to be pre-built by GitHub Actions
+# Using Debian like the official release for better compatibility
+FROM node:22.16.0-bookworm-slim
 
 ENV LANG=C.UTF-8
 
-# Install runtime and build dependencies
-RUN apk add --no-cache \
-    ca-certificates \
-    fontconfig \
-    shadow \
-    deno \
-    ttf-dejavu \
-    # Build tools needed for npm install (native modules)
-    python3 \
-    make \
-    g++ \
-    && apk upgrade --no-cache openssl \
-    && groupmod -n rocketchat nogroup \
-    && useradd -u 65533 -r -g rocketchat rocketchat
+# Install runtime dependencies
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        fontconfig \
+        curl \
+    && curl -fsSL https://deno.land/install.sh | sh \
+    && groupadd -r rocketchat \
+    && useradd -r -g rocketchat -u 65533 rocketchat \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Add Deno to PATH
+ENV DENO_INSTALL="/root/.deno"
+ENV PATH="$DENO_INSTALL/bin:$PATH"
 
 # Set default environment variables (overridden by ECS task definition)
 ENV DEPLOY_METHOD=docker \
@@ -33,17 +35,9 @@ WORKDIR /app
 # Copy the pre-built bundle from GitHub Actions build (copied to docker-build/ by workflow)
 COPY docker-build/bundle /app/bundle
 
-# Install production npm dependencies (as root, then chown)
+# Install production npm dependencies
 RUN cd /app/bundle/programs/server \
-    && npm install --omit=dev \
-    && cd /app/bundle/programs/server/npm/node_modules/sharp \
-    && npm install --omit=dev \
-    && rm -rf ../@img \
-    && mv node_modules/@img ../@img \
-    && rm -rf node_modules \
-    # Remove build tools to reduce image size
-    && apk del python3 make g++ \
-    # Set ownership after build
+    && npm install --omit=dev --unsafe-perm \
     && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
