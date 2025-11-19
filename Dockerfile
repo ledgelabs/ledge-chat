@@ -37,8 +37,9 @@ WORKDIR /app
 COPY docker-build/bundle /app/bundle
 
 # Install production npm dependencies
+# Skip install scripts since bundle is pre-built
 RUN cd /app/bundle/programs/server \
-    && npm install --omit=dev --unsafe-perm \
+    && npm install --omit=dev --ignore-scripts \
     && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
