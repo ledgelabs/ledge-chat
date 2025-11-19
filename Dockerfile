@@ -11,6 +11,7 @@ RUN apt-get update \
         ca-certificates \
         fontconfig \
         curl \
+        unzip \
     && curl -fsSL https://deno.land/install.sh | sh \
     && groupadd -r rocketchat \
     && useradd -r -g rocketchat -u 65533 rocketchat \
