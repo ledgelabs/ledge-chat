@@ -1,6 +1,6 @@
 # Rocket.Chat Docker image for pre-built bundle
-# Using Node 22 for Yarn v4 compatibility
-FROM node:22-bookworm-slim
+# Using Node 22.16.0 for Yarn v4 compatibility and package.json requirements
+FROM node:22.16.0-bookworm-slim
 
 ENV LANG=C.UTF-8
 
