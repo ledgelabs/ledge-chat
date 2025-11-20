@@ -42,10 +42,9 @@ WORKDIR /app
 COPY docker-build/bundle /app/bundle
 
 # Install production npm dependencies
-# Remove the install script from package.json that calls npm-rebuild.js
+# Use --unsafe-perm like official Rocket.Chat image to allow scripts to run as root
 RUN cd /app/bundle/programs/server \
-    && node -e "const pkg=require('./package.json');delete pkg.scripts;require('fs').writeFileSync('./package.json',JSON.stringify(pkg,null,2))" \
-    && npm install --omit=dev \
+    && npm install --omit=dev --unsafe-perm=true \
     && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
