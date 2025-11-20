@@ -44,6 +44,7 @@ COPY docker-build/bundle /app/bundle
 # Install production npm dependencies (skip scripts since bundle is pre-built)
 RUN cd /app/bundle/programs/server \
     && npm install --omit=dev --ignore-scripts \
+    && npm install denque --no-save \
     && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
