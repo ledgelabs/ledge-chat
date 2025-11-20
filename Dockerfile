@@ -20,6 +20,10 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Download and install AWS DocumentDB CA certificate
+RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /usr/local/share/ca-certificates/rds-combined-ca-bundle.crt \
+    && update-ca-certificates
+
 # Add Deno to PATH
 ENV DENO_INSTALL="/root/.deno"
 ENV PATH="$DENO_INSTALL/bin:$PATH"
