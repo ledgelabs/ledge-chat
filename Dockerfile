@@ -41,10 +41,11 @@ WORKDIR /app
 # Copy the pre-built bundle from GitHub Actions build (copied to docker-build/ by workflow)
 COPY docker-build/bundle /app/bundle
 
-# Install production npm dependencies (skip scripts since bundle is pre-built)
+# Install production npm dependencies
+# Remove the problematic npm-rebuild.js script before install to avoid spawn npm error
 RUN cd /app/bundle/programs/server \
-    && npm install --omit=dev --ignore-scripts \
-    && npm install denque --no-save \
+    && rm -f npm-rebuild.js \
+    && npm install --omit=dev \
     && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
