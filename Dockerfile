@@ -42,9 +42,9 @@ WORKDIR /app
 # Copy the pre-built bundle from GitHub Actions build (copied to docker-build/ by workflow)
 COPY docker-build/bundle /app/bundle
 
-# Install production npm dependencies
+# Install production npm dependencies (skip scripts since bundle is pre-built)
 RUN cd /app/bundle/programs/server \
-    && npm install --omit=dev \
+    && npm install --omit=dev --ignore-scripts \
     && chown -R rocketchat:rocketchat /app
 
 USER rocketchat
