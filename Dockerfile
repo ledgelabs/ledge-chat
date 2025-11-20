@@ -42,9 +42,9 @@ WORKDIR /app
 COPY docker-build/bundle /app/bundle
 
 # Install production npm dependencies
-# Remove the problematic npm-rebuild.js script before install to avoid spawn npm error
+# Remove the install script from package.json that calls npm-rebuild.js
 RUN cd /app/bundle/programs/server \
-    && rm -f npm-rebuild.js \
+    && node -e "const pkg=require('./package.json');delete pkg.scripts;require('fs').writeFileSync('./package.json',JSON.stringify(pkg,null,2))" \
     && npm install --omit=dev \
     && chown -R rocketchat:rocketchat /app
 
