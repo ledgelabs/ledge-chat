@@ -18,7 +18,6 @@ RUN apt-get update \
         graphicsmagick \
     && curl -fsSL https://deno.land/install.sh | sh \
     && corepack enable \
-    && corepack prepare npm@latest --activate \
     && groupadd -r rocketchat \
     && useradd -r -g rocketchat -u 65533 rocketchat \
     && apt-get clean \
