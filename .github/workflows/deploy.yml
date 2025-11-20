@@ -33,40 +33,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.16.0'
-          cache: 'yarn'
-
-      - name: Install Deno
-        uses: denoland/setup-deno@v1
-        with:
-          deno-version: v1.x
-
-      - name: Install Meteor
-        run: curl https://install.meteor.com/ | sed s/--progress-bar/-sL/g | /bin/sh
-
-      - name: Install dependencies
-        run: |
-          corepack enable
-          yarn
-
-      - name: Build packages
-        run: yarn build
-
-      - name: Build Meteor bundle
-        env:
-          METEOR_ALLOW_SUPERUSER: 1
-          METEOR_PROFILE: 1000
-          BABEL_ENV: production
-        run: yarn workspace @rocket.chat/meteor run build:ci
-
-      - name: Copy bundle to build context
-        run: |
-          mkdir -p ./docker-build
-          cp -r /tmp/dist/bundle ./docker-build/bundle
-
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
