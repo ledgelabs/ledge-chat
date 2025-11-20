@@ -10,7 +10,6 @@ apps/meteor/.meteor/local
 *.log
 
 # Git
-.git
 .gitignore
 
 # IDE
