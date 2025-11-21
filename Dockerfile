@@ -16,17 +16,18 @@ RUN apt-get update \
         libssl-dev \
         graphicsmagick \
         git \
+        gnupg \
     && curl -fsSL https://deno.land/install.sh | sh \
+    && curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg \
+    && echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] http://repo.mongodb.org/apt/debian bookworm/mongodb-org/7.0 main" | tee /etc/apt/sources.list.d/mongodb-org-7.0.list \
+    && apt-get update \
+    && apt-get install -y mongodb-mongosh \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Download AWS DocumentDB CA certificate
-RUN curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /usr/local/share/rds-combined-ca-bundle.pem
-
-# Add Deno to PATH and configure Node.js to trust DocumentDB CA
+# Add Deno to PATH
 ENV DENO_INSTALL="/root/.deno"
 ENV PATH="$DENO_INSTALL/bin:$PATH"
-ENV NODE_EXTRA_CA_CERTS="/usr/local/share/rds-combined-ca-bundle.pem"
 
 # Install Meteor
 RUN curl https://install.meteor.com/ | sed s/--progress-bar/-sL/g | /bin/sh
